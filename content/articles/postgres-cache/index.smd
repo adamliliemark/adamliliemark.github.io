@@ -1,0 +1,34 @@
+---
+{
+    .title = "Understanding PostgreSQL Buffer Cache",
+    .description = "PostgreSQL's buffer cache play a crucial role in maintaining high performance. In this article, I conduct some experiments and show how the buffer cache affects performance.",
+    .author = "Adam CL",
+    .layout = "post.shtml",
+    .date = @date("2025-01-25T11:31:00"),
+    .draft = false,
+    .tags = ["postgres", "sql"],
+}
+---
+
+## [Quick Intro to PostgreSQL]($section.id("intro"))
+[PostgreSQL](https://www.postgresql.org/) is an open source relational database engine. It has been around for some 35 years, is highly performant, scalable through replication and is widely used. Major cloud providers offer managed solutions for Postgres, with additions such as automatic failover and recover and automatic maintenance.
+
+
+## [What is the Buffer Cache?]($section.id("what-is-buffer-cache"))
+The buffer cache is, simply put, a caching mechanism to speed up reading of data. Since Postgres stores data on disk, any I/O reads to the storage layer will incur extra delay. The cache on the other hand lives in memory, providing much lower delay. The performance difference is an order of magnitude, something we'll see later in this post.
+
+There is more than one cache in Postgres, but in this post I'll only focus on `shared_buffers`, which is the main cache for reading data.
+
+### [Structure of shared_buffers]($section.id("shared_buffers"))
+The smallest unit in Postgres is a `page`, defaulting to 8kB. A row of data in a table will be stored in at least one page - if the size of the row exceeds the page size, it will be distributed among multiple pages. Simple stuff.
+
+The `shared_buffers` will only cache pages. The implication of this is that rows that hasn't been read might be cached, since neighbouring (page-wise) rows have been read.
+
+## [Experimenting with the Cache]($section.id("experiment"))
+Let's start by enabling an extension which will allow us to read the contents of the cache:
+
+```sql
+create extension pg_buffercache;
+
+select * from table;
+```

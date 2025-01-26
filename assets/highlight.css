@@ -225,3 +225,13 @@ code.gleam .keyword,
 code.gleam .attribute {
   color: var(--mauve);
 }
+
+code.sql .qualifier,
+code.sql .keyword,
+code.sql .attribute {
+  color: var(--mauve);
+}
+
+code.sql .operator {
+  color: var(--blue);
+}
